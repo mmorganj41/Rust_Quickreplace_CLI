@@ -2,6 +2,8 @@ use text_colorizer::*;
 use std::env;
 
 fn main() {
+    let args = parse_args();
+    println!("{:?}", args);
 }
 
 fn print_usage() {
