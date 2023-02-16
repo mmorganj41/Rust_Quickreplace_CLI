@@ -1,6 +1,7 @@
 use text_colorizer::*;
 use std::env;
 use std::fs;
+use regex::Regex;
 
 fn main() {
     let args = parse_args();
@@ -14,12 +15,21 @@ fn main() {
         }
     };
 
-    match fs:: write(&args.output, &data) {
+    let replaced_data = match replace(&args.target, &args.replacement, &data) {
+        Ok(v) => v,
+        Err(e) => {
+            eprintln!("{} replace the text: {:?}.",
+                      "Error:".red().bold(),  e);
+            std::process::exit(1);
+        }
+    };
+
+    match fs:: write(&args.output, &replaced_data) {
         Ok(_) => {},
         Err(e) => {
             eprintln!("{} failed to write to file '{}': {:?}.",
-            "Error:".red().bold(), args.filename, e);
-      std::process::exit(1);
+                      "Error:".red().bold(), args.output, e);
+            std::process::exit(1);
         }
     };
 }
@@ -46,6 +56,13 @@ fn parse_args() -> Arguments {
         filename: args[2].clone(),
         output: args[3].clone()
     }
+}
+
+fn replace(target: &str, replacement: &str, text: &str)
+    -> Result<String, regex::Error>
+{
+    let regex = Regex::new(target)?;
+    Ok(regex.replace_all(text, replacement).to_string())
 }
 
 #[derive(Debug)]
